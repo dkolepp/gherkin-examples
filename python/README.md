@@ -209,7 +209,7 @@ that must not half-happen (a declined card must not ship anything).
 | One team's steps | its `README.md`, or `../../.venv/bin/behave --steps-catalog` in its folder |
 | Where each step is used, and unused ones | `behave --dry-run -f steps.usage` in a package |
 | pytest-bdd steps (sentences only) | `pytest --fixtures tests/bdd \| grep pytestbdd_stepdef_` in a package |
-| godog steps (Go) | `godog --definitions` |
+| godog steps (Go) | `make -C ../go/journey catalog` (see `../go/README.md`) |
 
 Each step's docstring is written for scenario writers, and the catalog shows
 it. Day to day, editor plugins (VS Code's Cucumber extension, PyCharm

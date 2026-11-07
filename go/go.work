@@ -1,0 +1,25 @@
+// Local development across the team modules: with this file, each module
+// uses the others from source (like `pip install -e`). The journey does NOT
+// use it (GOWORK=off): it takes the modules as built artifacts from dist/.
+go 1.24
+
+use (
+	./modules/cart
+	./modules/checkout
+	./modules/common
+	./modules/payments
+	./modules/shipping
+	./tools
+)
+
+// The go command still reads the go.mod of each version a module requires,
+// even when that module is in the workspace. These point the versions the
+// teams require at the source folders, so development needs no dist/.
+// They live here only: the team modules and the journey have no replace.
+// Bump them with the versions in the requiring go.mod files.
+replace (
+	example.com/shop/bddcommon v1.1.0 => ./modules/common
+	example.com/shop/cart v1.0.0 => ./modules/cart
+	example.com/shop/payments v1.0.0 => ./modules/payments
+	example.com/shop/shipping v1.1.0 => ./modules/shipping
+)

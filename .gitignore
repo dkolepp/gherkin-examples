@@ -4,3 +4,9 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
+
+# Go: the journey's own module and build caches, and its generated go.sum
+# (go/dist is covered by dist/ above)
+go/journey/.gomodcache/
+go/journey/.gocache/
+go/journey/go.sum

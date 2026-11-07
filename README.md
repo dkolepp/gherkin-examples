@@ -9,7 +9,7 @@ checkout scenario without writing any step code of its own.
 Three lessons run through it:
 
 1. **Specs are separate from test code.** The same Gherkin runs under several
-   runners and, soon, several languages.
+   runners and in two languages (Python and Go).
 2. **Teams own their parts.** Each team's rules, driver and steps are its own.
 3. **Boundaries need contracts.** Step sentences, driver state and versions are
    public API between teams.
@@ -27,11 +27,16 @@ python/                 the Python kits (behave and pytest-bdd): see python/READ
 ├── packages/<team>/    one versioned package per team, plus its runner wiring
 ├── journey/            the journey, run from the built wheels
 └── Makefile
+go/                     the Go kits (godog): see go/README.md
+├── modules/<team>/     one versioned module per team, plus its godog wiring
+├── tools/publish/      publishes the modules into go/dist, a local module proxy
+├── journey/            the journey, run from the published modules
+└── Makefile
 docs/                   design documents and the Gherkin support matrix
 Makefile                delegates to each language's Makefile
 ```
 
-A Go version (`go/`, using godog) is coming. It will run the same `specs/`.
+Python and Go run the same `specs/`, unchanged, with the same step sentences.
 
 ## Why the specs live on their own
 
@@ -43,26 +48,35 @@ each language's kits implement it:
   its folder there, and its kit in every language (see
   [`docs/CODEOWNERS.example`](docs/CODEOWNERS.example)).
 - Each language keeps its own wiring next to its code and points its runners
-  at `specs/`. For Python, see "How the runners find the shared specs" in
-  [`python/README.md`](python/README.md).
+  at `specs/`. See "How the runners find the shared specs" in
+  [`python/README.md`](python/README.md) and "How the runner finds the shared
+  specs" in [`go/README.md`](go/README.md).
 - A changed sentence in `specs/` is a change to every language's kit. When
   each language's run is green, every kit agrees with the contract.
 
 ## Quick start
 
-Needs `make`, and Python 3.10+ for the Python side.
+Needs `make`, Python 3.10+ for the Python side and Go 1.24+ for the Go side.
 
 ```bash
-make test             # every language's tests (today: Python)
-make journey          # every language's journey (today: Python)
+make test             # every language's tests (Python and Go)
+make journey          # every language's journey (Python and Go)
 make python-test      # python/: each team's behave and pytest runs, unit tests
 make python-journey   # python/: build the wheels, run the journey from them
 make python-check     # python/: journey dry run: undefined or duplicate steps
+make go-test          # go/: gofmt, go vet, unit tests, each team's godog run
+make go-journey       # go/: publish the modules, run the journey from them
+make go-check         # go/: duplicate sentences, then a strict journey run
 make help             # all targets
 ```
 
+Limit to one language with `make test LANGUAGES=go`.
+
 The lessons, the Gherkin cheat sheet, the contracts between teams and the
 exercises are in [`python/README.md`](python/README.md).
+[`go/README.md`](go/README.md) covers the same ground for godog, plus what
+differs in Go: context-based shared state, a local module proxy instead of a
+wheel folder, and what godog can and can't check without running.
 
 ## Further reading
 

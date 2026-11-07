@@ -4,22 +4,31 @@
 # approval. In a multi-repo setup, each package would be its own repo instead.
 
 # Each team owns its specs (the language-neutral contract) and its kit in
-# every language. Add /go/... lines next to the python ones when go/ arrives.
+# every language.
 /specs/cart/                 @example-org/cart-team
 /python/packages/cart/       @example-org/cart-team
+/go/modules/cart/            @example-org/cart-team
 /specs/payments/             @example-org/payments-team
 /python/packages/payments/   @example-org/payments-team
+/go/modules/payments/        @example-org/payments-team
 /specs/shipping/             @example-org/shipping-team
 /python/packages/shipping/   @example-org/shipping-team
+/go/modules/shipping/        @example-org/shipping-team
 /specs/checkout/             @example-org/checkout-team
 /python/packages/checkout/   @example-org/checkout-team
+/go/modules/checkout/        @example-org/checkout-team
 /specs/journeys/             @example-org/checkout-team
 /python/journey/             @example-org/checkout-team
+/go/journey/                 @example-org/checkout-team
 
 # Shared by everyone. With several owners on one line, GitHub needs approval
 # from any ONE of them. Agree as a team to wait for all of them.
 /python/packages/common/     @example-org/cart-team @example-org/payments-team @example-org/shipping-team @example-org/checkout-team
+/go/modules/common/          @example-org/cart-team @example-org/payments-team @example-org/shipping-team @example-org/checkout-team
 
 # Build and task definitions
 /Makefile                    @example-org/checkout-team
 /python/Makefile             @example-org/checkout-team
+/go/Makefile                 @example-org/checkout-team
+/go/go.work                  @example-org/checkout-team
+/go/tools/                   @example-org/checkout-team
