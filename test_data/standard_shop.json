@@ -1,0 +1,11 @@
+{
+  "products": [
+    {"name": "Coffee Beans", "price": "12.50", "stock": 10},
+    {"name": "Mug",          "price": "8.00",  "stock": 3},
+    {"name": "Tea Bags",     "price": "4.25",  "stock": 0}
+  ],
+  "discount_codes": [
+    {"code": "SAVE10", "percent_off": 10},
+    {"code": "BIG20",  "percent_off": 20, "minimum_spend": "50.00"}
+  ]
+}
