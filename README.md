@@ -106,6 +106,50 @@ Feature: Short name
       """
 ```
 
+## Finding steps
+
+Steps are reusable, so before writing a new sentence, check whether one already
+exists. Each step function has a plain-language docstring, which acts as the
+catalog's description.
+
+| Goal | Command |
+|------|---------|
+| List every step with its description | `behave --steps-catalog` |
+| See where each step is used, and spot unused ones | `behave --dry-run -f steps.usage` |
+| List pytest-bdd steps (sentences only) | `pytest --fixtures tests/bdd \| grep pytestbdd_stepdef_` |
+| List godog steps (Go) | `godog --definitions` |
+
+Example `behave --steps-catalog` output:
+
+```
+Given I have a cart containing {qty:Qty} "{product}"
+    Start a new cart that already holds some of one product.
+
+When I try to add {qty:Qty} "{product}" to the cart
+    Try to put products in the cart, which may be refused.
+
+    Follow with 'Then I should be told "..."' to check the reason.
+```
+
+pytest-bdd has no catalog command. It registers each step as a pytest fixture
+named `pytestbdd_stepdef_<keyword>_<sentence>`, so the fixture list doubles as a
+step list, without the docstrings. Because both runners share the same
+sentences, the behave catalog describes the pytest-bdd steps too.
+
+Day to day, an editor plugin is the quickest way to find steps: VS Code's
+Cucumber extension and PyCharm Professional both autocomplete step sentences
+and jump to their code.
+
+Keeping the catalog useful:
+
+- Write each docstring for someone writing scenarios, not for programmers.
+  Mention table columns and which step to pair it with.
+- Keep the docstrings in `features/steps/shop_steps.py` and
+  `tests/bdd/conftest.py` in sync.
+- Group steps by business area as the list grows (`cart_steps.py`,
+  `discount_steps.py`).
+- Before adding a step, search the catalog for one that already says it.
+
 ## Running a subset
 
 | Goal | behave | pytest-bdd |
