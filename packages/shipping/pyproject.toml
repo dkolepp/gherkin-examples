@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shop-shipping"
+version = "1.1.0"
+description = "Shipping domain and its BDD kit (shipping team)"
+readme = "README.md"
+requires-python = ">=3.10"
+# The application itself. Only checkout depends on other teams' apps.
+dependencies = []
+
+[project.optional-dependencies]
+# The BDD kit (driver + steps). Pick the extra for your runner.
+behave = ["shop-bdd-common[behave]>=1.0,<2"]
+pytest = ["shop-bdd-common[pytest]>=1.0,<2"]
+dev = ["shop-shipping[behave,pytest]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"shop_shipping.bdd" = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+bdd_features_base_dir = "features/"
+addopts = "--strict-markers"
+markers = ["shipping: tag from the feature files"]

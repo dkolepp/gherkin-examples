@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shop-cart"
+version = "1.0.0"
+description = "Cart domain and its BDD kit (cart team)"
+readme = "README.md"
+requires-python = ">=3.10"
+# The application itself. Only checkout depends on other teams' apps.
+dependencies = []
+
+[project.optional-dependencies]
+# The BDD kit (driver + steps). Pick the extra for your runner.
+behave = ["shop-bdd-common[behave]>=1.0,<2"]
+pytest = ["shop-bdd-common[pytest]>=1.0,<2"]
+dev = ["shop-cart[behave,pytest]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"shop_cart.bdd" = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+bdd_features_base_dir = "features/"
+addopts = "--strict-markers"
+markers = ["cart: tag from the feature files", "discounts: tag from the feature files", "receipt: tag from the feature files", "smoke: tag from the feature files"]

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shop-bdd-common"
+version = "1.0.0"
+description = "Shared BDD building blocks for the shop teams' step libraries"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["parse>=1.19", "parse_type>=0.6"]
+
+[project.optional-dependencies]
+# Pick the runner you use; the runner is part of the contract.
+behave = ["behave>=1.2.6"]
+pytest = ["pytest>=8", "pytest-bdd>=8"]
+dev = ["shop-bdd-common[behave,pytest]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shop-checkout"
+version = "1.0.0"
+description = "Checkout service and its BDD kit (checkout team)"
+readme = "README.md"
+requires-python = ">=3.10"
+# The application itself. Only checkout depends on other teams' apps.
+dependencies = ["shop-cart>=1.0,<2", "shop-payments>=1.0,<2", "shop-shipping>=1.1,<2"]
+
+[project.optional-dependencies]
+# The BDD kit (driver + steps). Pick the extra for your runner.
+behave = ["shop-bdd-common[behave]>=1.0,<2", "shop-cart[behave]>=1.0,<2", "shop-payments[behave]>=1.0,<2", "shop-shipping[behave]>=1.1,<2"]
+pytest = ["shop-bdd-common[pytest]>=1.0,<2", "shop-cart[pytest]>=1.0,<2", "shop-payments[pytest]>=1.0,<2", "shop-shipping[pytest]>=1.1,<2"]
+dev = ["shop-checkout[behave,pytest]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+bdd_features_base_dir = "features/"
+addopts = "--strict-markers"
+markers = ["checkout: tag from the feature files"]

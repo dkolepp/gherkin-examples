@@ -1,121 +1,203 @@
 # gherkin-examples
 
 Learn **Gherkin** and **BDD** (Behaviour-Driven Development) in Python, using
-both [behave](https://behave.readthedocs.io/) and
+[behave](https://behave.readthedocs.io/) and
 [pytest-bdd](https://pytest-bdd.readthedocs.io/).
 
-The example is a tiny shop: a cart with discount codes and a printed receipt,
-card payments, shipping, and a checkout journey that ties them together. The
-same `.feature` files are run by **both** tools, which shows the main lesson:
-*the test cases (specs) are separate from the test code.*
+The example is a tiny shop, split the way a real organisation might split it:
 
-The second lesson is about ownership: each part of the shop belongs to a
-different (imaginary) team, and a cross-team journey reuses their work instead
-of duplicating it. See [A journey across teams](#a-journey-across-teams).
+- **Four teams** (cart, payments, shipping, checkout) each publish a versioned
+  package: their application code plus a *BDD kit* (a driver and a step library).
+- **A light journey project** installs those packages as built wheels and runs
+  an end-to-end checkout scenario. It writes no step code of its own.
+
+Three lessons run through it:
+
+1. **Specs are separate from test code.** The same Gherkin runs under behave
+   and pytest-bdd.
+2. **Teams own their parts.** Each team's rules, driver and steps live in its
+   own package.
+3. **Boundaries need contracts.** Step sentences, driver state and versions are
+   public API between teams.
 
 ## Quick start
 
+Needs Python 3.10+ and `make`.
+
 ```bash
-python -m venv .venv
+make dev        # create .venv and install every team package (editable)
+make test       # run each team's own feature files and tests
+make build      # build each package into a wheel in dist/
+make journey    # build, then run the journey against the built wheels
+```
+
+`make help` lists the targets. `make test PACKAGES="cart payments"` limits
+them to some packages.
+
+## The big picture
+
+```
+packages/                     one folder per team; each would be its own repo
+├── common/     shop-bdd-common 1.0.0   shared steps and helpers (all teams)
+├── cart/       shop-cart       1.0.0   cart, discounts, receipt
+├── payments/   shop-payments   1.0.0   card payments
+├── shipping/   shop-shipping   1.1.0   shipping costs and shipments
+└── checkout/   shop-checkout   1.0.0   placing an order (uses the other three)
+dist/                         built wheels: our stand-in for a package index
+journey/                      the end-to-end journey (light: no step code)
+Makefile                      team tasks: dev, test, build, journey
+```
+
+It maps closely onto the Ansible ecosystem:
+
+| Ansible | Here |
+|---|---|
+| Playbook, written by an integrator | `journey/features/checkout.feature`, by the journey owner |
+| Role or collection, by domain experts | A team package: driver + step library + bundled data |
+| Module (does the actual work) | Driver method (`charge`, `ship`) |
+| Role's `argument_specs` | Step sentences and their typed placeholders (`{amount:Money}`) |
+| Role defaults | Bundled test data (`standard_shop.json`) |
+| Molecule tests for a role | Each team's own feature files in `packages/<team>/features/` |
+| Galaxy | `dist/` (in real life, a private package index) |
+| `requirements.yml` | `journey/requirements.txt` with pinned versions |
+| `ansible-doc` | `make -C journey catalog` |
+| Controller: RBAC, job templates | CI with protected environments (not shown) |
+
+## Inside each team package
+
+```
+packages/payments/
+├── pyproject.toml            name, version, and the [behave] / [pytest] extras
+├── README.md                 the contract: what it provides and needs, every step
+├── CHANGELOG.md
+├── src/shop_payments/
+│   ├── __init__.py           APP   the application code
+│   └── bdd/
+│       ├── driver.py         HOW   business actions in Python
+│       ├── steps_behave.py   GLUE  step definitions for behave
+│       └── steps_pytest.py   GLUE  the same steps for pytest-bdd
+├── features/                 WHAT  the team's own rules, in Gherkin
+│   ├── payments.feature
+│   ├── environment.py        behave wiring
+│   └── steps/use_steps.py    imports the step library, just like consumers do
+└── tests/bdd/                pytest-bdd wiring for the same feature files
+```
+
+The layers, from most readable to most technical:
+
+```
+*.feature        WHAT   Specs in plain language. Product owners can read them.
+steps_*.py       GLUE   Match a sentence, pull out values, call the driver.
+driver.py        HOW    Business actions ("charge a card"). Shared by both runners.
+src/shop_*/      APP    The real application. Knows nothing about tests.
+```
+
+Each team tests its step library by importing it, exactly as other teams will.
+If a team's own `features/` pass, the published steps work.
+
+## Contracts between teams
+
+### 1. Step sentences are public API
+
+Every package README has a table of its step sentences. Treat them like
+function signatures:
+
+- **New step**: minor version.
+- **Changed wording or meaning**: major version. Deprecate first.
+
+Shipping 1.1.0 shows the deprecation path. It added
+`a shipment of {qty} items should be sent to "{country}"` and kept the old
+1.0.0 sentence `{qty} items should be shipped to "{country}"` working, with a
+`StepDeprecationWarning` naming the replacement. The old sentence goes in
+2.0.0. See `packages/shipping/CHANGELOG.md`.
+
+### 2. Shared state is declared
+
+Steps from different teams share one world, so each library says what it puts
+there and what it needs:
+
+| Library | Provides (behave / pytest-bdd) | Needs |
+|---|---|---|
+| shop-bdd-common | `context.outcome` / `outcome` | – |
+| shop-cart | `context.shop` / `shop` | outcome |
+| shop-payments | `context.payments` / `payments` | outcome |
+| shop-shipping | `context.shipping` / `shipping` | outcome |
+| shop-checkout | `context.checkout` / `checkout` | shop, payments, shipping, outcome |
+
+For behave, each library has `install(context)`; the journey calls them in
+order. For pytest-bdd, they are fixtures.
+
+### 3. Gherkin has no namespaces
+
+The sentence text *is* the identifier, shared by every team. Two teams
+defining `I have an empty cart` would clash. behave refuses to load duplicate
+sentences (`AmbiguousStep`), and `make -C journey check` runs that check
+without executing anything. It also fails on sentences nobody defined.
+pytest-bdd silently lets the closer definition win, so run the behave check
+even if you use pytest.
+
+### 4. The runner is part of the contract
+
+Install a kit with the extra for your runner: `shop-cart[behave]` or
+`shop-cart[pytest]`. The journey uses behave only, so it never installs
+pytest-bdd.
+
+### 5. Install team packages only from your own index
+
+`journey/Makefile` installs the team packages with `--no-index` from `dist/`,
+then their third-party dependencies from PyPI. Otherwise a public package with
+the same name could win (dependency confusion).
+
+## Why the journey earns its place
+
+Shipping is free from $50.00. Is that before or after the cart's discount? The
+cart and shipping teams' tests pass either way, and so do the checkout team's
+own. Only the journey scenario *"A discount that drops the order below $50.00
+brings shipping back"* catches it.
+
+Try it: in `packages/checkout/src/shop_checkout/__init__.py`, change
+`cart.total` to `cart.subtotal`. Then:
+
+```bash
+make test PACKAGES=checkout   # checkout's own tests: still pass
+make journey                  # rebuilds the wheels: exactly that scenario fails
+```
+
+So keep journeys few: one happy path, rules no single team owns, and failures
+that must not half-happen (a declined card must not ship anything).
+
+## Finding steps
+
+| Goal | Command |
+|------|---------|
+| Every step the journey can use, with descriptions | `make -C journey catalog` |
+| One team's steps | its `README.md`, or `../../.venv/bin/behave --steps-catalog` in its folder |
+| Where each step is used, and unused ones | `behave --dry-run -f steps.usage` in a package |
+| pytest-bdd steps (sentences only) | `pytest --fixtures tests/bdd \| grep pytestbdd_stepdef_` in a package |
+| godog steps (Go) | `godog --definitions` |
+
+Each step's docstring is written for scenario writers, and the catalog shows
+it. Day to day, editor plugins (VS Code's Cucumber extension, PyCharm
+Professional) autocomplete step sentences and jump to their code.
+
+## Working on one team's package
+
+```bash
 source .venv/bin/activate
-pip install -r requirements.txt
-
-behave        # run the specs with behave
-pytest        # run the same specs with pytest-bdd (plus unit tests)
+cd packages/cart
+behave                       # the team's feature files, with behave
+pytest                       # the same feature files with pytest-bdd, plus unit tests
 ```
 
-## How the concerns are separated
+| Goal | behave | pytest-bdd |
+|------|--------|-----------|
+| Only `@smoke` scenarios | `behave --tags=smoke` | `pytest -m smoke` |
+| Skip a tag | `behave --tags="not receipt"` | `pytest -m "not receipt"` |
+| One feature file | `behave features/cart.feature` | `pytest tests/bdd/test_cart.py` |
+| By scenario name | `behave -n "stock"` | `pytest -k stock` |
+| Compact output | `behave -f progress` | `pytest -q` |
 
-```
-features/*.feature        1. WHAT   Specs in plain language. No code.
-        │                           Product owners and testers can read and write these.
-        ▼
-step definitions          2. GLUE   Match a sentence, pull out values, call the driver.
-  features/steps/ (behave)          One or two lines each.
-  tests/bdd/step_defs/ (pytest-bdd)
-        │
-        ▼
-bdd_support/*_driver.py   3. HOW    Business actions in Python ("add to cart",
-                                    "apply code"). Shared by both runners.
-        │
-        ▼
-src/                      4. APP    The real application. Knows nothing about tests.
-
-test_data/*.json          Test data that is too big or too shared to live in a spec.
-```
-
-Why bother?
-
-- **Specs change for business reasons, code changes for technical reasons.**
-  Keeping them apart means one kind of change doesn't break the other.
-- **Steps are reusable.** `Given I have an empty cart` is written once and used
-  in many scenarios.
-- **The driver hides the "how".** If the shop got a web UI tomorrow, you'd write
-  a new driver that clicks buttons. The `.feature` files and steps stay the same.
-- **The runner is replaceable.** This repo proves it: behave and pytest-bdd read
-  identical specs.
-
-## Repository tour
-
-| Path | What it is |
-|------|-----------|
-| `features/domains/cart/cart.feature` | Background, data tables, tags, Scenario Outline with two Examples tables |
-| `features/domains/cart/discounts.feature` | `Rule:` blocks, Outline, expecting errors |
-| `features/domains/cart/receipt.feature` | Doc strings (`"""`), loading data from `test_data/` |
-| `features/domains/payments/`, `…/shipping/` | The payments and shipping teams' own rules |
-| `features/journeys/checkout.feature` | A journey across cart, payments and shipping |
-| `features/environment.py` | behave hooks (fresh drivers per scenario) |
-| `features/steps/*_steps.py` | behave step definitions, one module per team |
-| `tests/bdd/step_defs/*_steps.py` | pytest-bdd step definitions, one module per team |
-| `tests/bdd/conftest.py` | pytest-bdd fixtures; imports all step modules |
-| `tests/bdd/test_*.py` | Bind feature files to pytest (`scenarios(...)` or `@scenario`) |
-| `tests/unit/` | Plain unit tests, for contrast |
-| `bdd_support/*_driver.py` | One driver per team, shared by both runners |
-| `bdd_support/outcome.py` | Remembers errors from "try to" steps, for all teams |
-| `bdd_support/types.py` | Custom `{amount:Money}` / `{qty:Qty}` step types |
-| `src/shop/`, `src/payments/`, `src/shipping/`, `src/checkout/` | The application, one package per domain |
-| `docs/CODEOWNERS.example` | How the team ownership would be enforced on GitHub |
-
-Tip: open `features/steps/cart_steps.py` and `tests/bdd/step_defs/cart_steps.py`
-side by side. Same sentences, same driver calls, different glue.
-
-## A journey across teams
-
-The checkout journey crosses three domains, each owned by a different team:
-
-| Team | Owns |
-|------|------|
-| Cart | `src/shop/`, `features/domains/cart/`, `cart_driver.py`, `cart_steps.py` |
-| Payments | `src/payments/`, `features/domains/payments/`, `payments_driver.py`, `payment_steps.py` |
-| Shipping | `src/shipping/`, `features/domains/shipping/`, `shipping_driver.py`, `shipping_steps.py` |
-| Checkout (journey owner) | `src/checkout/`, `features/journeys/`, `checkout_driver.py`, `checkout_steps.py` |
-| Everyone | `common_steps.py`, `outcome.py`, `types.py`: every team should review changes |
-
-How it's put together:
-
-- **Each team's detailed rules live in its own feature file.** Card limits are
-  tested in `payments.feature`, not in the journey.
-- **The journey reuses other teams' steps.** `checkout.feature` uses the cart
-  team's `I have a cart containing…`, the payments team's
-  `card "4242" should be charged…` and the shipping team's
-  `a shipment of 3 items should be sent…`. The checkout team only wrote the
-  four checkout steps.
-- **Teams talk through drivers, not internals.** `CheckoutDriver` is built from
-  the other teams' drivers, and `src/checkout/` only calls the other packages'
-  public classes. A team can change its internals without breaking the journey.
-- **Journeys stay few.** They check that the pieces connect. Here that means
-  one happy path, a rule no single team owns, and failures that must not
-  half-happen (a declined card must not ship anything).
-
-**Why the journey earns its place:** shipping is free from $50.00, but is that
-before or after the cart's discount? The cart and shipping teams' tests each
-pass whichever way checkout does it. Only the journey scenario
-*"A discount that drops the order below $50.00 brings shipping back"* catches
-checkout using the wrong number. Try it: in `src/checkout/__init__.py` change
-`cart.total` to `cart.subtotal` and run either tool. Exactly that one scenario
-fails.
-
-Run by owner with tags: `behave --tags=journey`, `pytest -m payments`.
+(pytest needs each tag registered under `markers` in the package's `pyproject.toml`.)
 
 ## Gherkin cheat sheet
 
@@ -154,60 +236,9 @@ Feature: Short name
       """
 ```
 
-## Finding steps
-
-Steps are reusable, so before writing a new sentence, check whether one already
-exists. Each step function has a plain-language docstring, which acts as the
-catalog's description.
-
-| Goal | Command |
-|------|---------|
-| List every step with its description | `behave --steps-catalog` |
-| See where each step is used, and spot unused ones | `behave --dry-run -f steps.usage` |
-| List pytest-bdd steps (sentences only) | `pytest --fixtures tests/bdd \| grep pytestbdd_stepdef_` |
-| List godog steps (Go) | `godog --definitions` |
-
-Example `behave --steps-catalog` output:
-
-```
-Given I have a cart containing {qty:Qty} "{product}"
-    Start a new cart that already holds some of one product.
-
-When I try to add {qty:Qty} "{product}" to the cart
-    Try to put products in the cart, which may be refused.
-
-    Follow with 'Then I should be told "..."' to check the reason.
-```
-
-pytest-bdd has no catalog command. It registers each step as a pytest fixture
-named `pytestbdd_stepdef_<keyword>_<sentence>`, so the fixture list doubles as a
-step list, without the docstrings. Because both runners share the same
-sentences, the behave catalog describes the pytest-bdd steps too.
-
-Day to day, an editor plugin is the quickest way to find steps: VS Code's
-Cucumber extension and PyCharm Professional both autocomplete step sentences
-and jump to their code.
-
-Keeping the catalog useful:
-
-- Write each docstring for someone writing scenarios, not for programmers.
-  Mention table columns and which step to pair it with.
-- Keep the docstrings in `features/steps/` and `tests/bdd/step_defs/` in sync.
-- Group steps by owning team or business area (`cart_steps.py`,
-  `payment_steps.py`), as this repo does.
-- Before adding a step, search the catalog for one that already says it.
-
-## Running a subset
-
-| Goal | behave | pytest-bdd |
-|------|--------|-----------|
-| Only `@smoke` scenarios | `behave --tags=smoke` | `pytest -m smoke` |
-| Skip a tag | `behave --tags="not receipt"` | `pytest -m "not receipt"` |
-| One feature file | `behave features/domains/cart/cart.feature` | `pytest tests/bdd/test_cart.py` |
-| By scenario name | `behave -n "stock"` | `pytest -k stock` |
-| Compact output | `behave -f progress` | `pytest -q` |
-
-(pytest needs each tag registered under `markers` in `pyproject.toml`.)
+(The `#` notes above are for reading only. In a real feature file, comments
+must be on their own line: text after a step, `# like this`, becomes part of
+the step.)
 
 ## Writing good scenarios
 
@@ -216,23 +247,29 @@ Keeping the catalog useful:
 - **One behaviour per scenario.** If you need "And then … And then …", split it.
 - **Use real examples.** `$12.50 → $11.25` is clearer than "the price is reduced".
 - **Keep Given/When/Then in order.** Arrange, act, assert.
-- **Make failure explicit.** Here, `I add` must succeed, while `I try to add`
+- **Make failure explicit.** `I add` must succeed, while `I try to add`
   records the error so a `Then I should be told "…"` step can check it.
-- **Keep the technical edge cases in unit tests** (see `tests/unit/`).
+- **Keep the technical edge cases in unit tests** (see `packages/cart/tests/unit/`).
 
 ## Exercises
 
-1. Add a `Scenario` to `features/domains/cart/cart.feature`: removing a "Mug" from an empty cart
-   leaves the cart empty. You can write it using only existing steps, so it
-   should pass straight away in both tools.
-2. Write a new step, e.g. `Then the cart should have {n:Qty} different products`.
-   Implement it for behave *and* pytest-bdd (one line each, plus a driver method
-   if needed).
-3. Add a "buy 3, pay for 2" offer. Write the `.feature` file **first**, watch it
-   fail, then implement it in `src/shop/`. That's the BDD loop.
-4. Add a journey scenario: checking out with an empty cart (start with
-   `Given I have an empty cart`). The checkout code already refuses it with
-   "Your cart is empty", so you only need existing steps.
-5. Write a step sentence with no definition and run both tools. behave prints a
-   ready-to-paste code snippet for it; pytest-bdd fails with
-   `StepDefinitionNotFoundError` naming the missing sentence.
+1. In `packages/cart/features/cart.feature`, add a scenario: removing a "Mug"
+   from an empty cart leaves the cart empty. It needs only existing steps.
+2. Add a step to the cart kit, e.g. `Then the cart should have {n:Qty} different
+   products`, in both `steps_behave.py` and `steps_pytest.py`. Bump the cart
+   version to 1.1.0, add a CHANGELOG entry, `make build`, update the pin in
+   `journey/requirements.txt`, and use the new step in the journey.
+3. Retire a sentence: rename a payments step and deprecate the old wording the
+   way `packages/shipping` does. Check the warning appears when the old
+   sentence runs.
+4. Add a "buy 3, pay for 2" offer to the cart. Write the scenario **first**,
+   watch it fail, then implement it. That's the BDD loop.
+5. Break the contract on purpose: define `I have an empty cart` again in
+   `journey/features/steps/team_steps.py` and run `make -C journey check`.
+
+## Task runner
+
+Plain `make` is used because it's already installed almost everywhere. If you
+prefer [mise](https://mise.jdx.dev/) or [invoke](https://www.pyinvoke.org/),
+their tasks can simply call these same `make` targets; mise can also pin the
+Python version.
