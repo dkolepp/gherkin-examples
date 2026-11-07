@@ -31,6 +31,10 @@ class Cart:
         else:
             self._quantities.pop(name, None)
 
+    def clear(self) -> None:
+        self._quantities.clear()
+        self.discount = None
+
     def quantity_of(self, name: str) -> int:
         return self._quantities.get(name, 0)
 

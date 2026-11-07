@@ -1,10 +1,10 @@
-"""behave step definitions.
+"""Cart steps (owned by the cart team). behave version.
 
 Each function matches one Gherkin sentence, pulls the values out of it, and
 hands them to the ShopDriver (context.shop). No business logic lives here.
 
-Compare this file with tests/bdd/steps.py: the same sentences, glued to the
-same driver, using pytest-bdd instead.
+Compare this file with tests/bdd/step_defs/cart_steps.py: the same sentences,
+glued to the same driver, using pytest-bdd instead.
 """
 
 from behave import given, register_type, step, then, when
@@ -80,7 +80,7 @@ def step_try_add(context, qty, product):
 
     Follow with 'Then I should be told "..."' to check the reason.
     """
-    context.shop.attempt(context.shop.add_to_cart, product, qty)
+    context.outcome.attempt(context.shop.add_to_cart, product, qty)
 
 
 @when('I remove {qty:Qty} "{product}" from the cart')
@@ -103,7 +103,7 @@ def step_try_apply_code(context, code):
 
     Follow with 'Then I should be told "..."' to check the reason.
     """
-    context.shop.attempt(context.shop.apply_code, code)
+    context.outcome.attempt(context.shop.apply_code, code)
 
 
 @when("I print the receipt")
@@ -150,13 +150,6 @@ def step_cart_contains(context, qty, product):
     actual = context.shop.cart.quantity_of(product)
     assert actual == qty, f"cart has {actual} {product}"
 
-
-@then('I should be told "{message}"')
-def step_told(context, message):
-    """Check the message the shopper saw when the last 'try to' step was refused."""
-    error = context.shop.last_error
-    assert error is not None, "expected an error, but the action succeeded"
-    assert str(error) == message, f"got: {error}"
 
 
 @then("the receipt should read:")

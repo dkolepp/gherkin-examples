@@ -11,12 +11,15 @@ requires-python = ">=3.10"
 [project.optional-dependencies]
 test = ["pytest>=8", "pytest-bdd>=8", "behave>=1.2.6"]
 
-# Two importable packages: the app (src/shop) and the shared test layer.
+# The app is four domain packages in src/, plus the shared test layer.
 [tool.setuptools]
-packages = ["shop", "bdd_support"]
+packages = ["shop", "payments", "shipping", "checkout", "bdd_support"]
 
 [tool.setuptools.package-dir]
 shop = "src/shop"
+payments = "src/payments"
+shipping = "src/shipping"
+checkout = "src/checkout"
 bdd_support = "bdd_support"
 
 # --- pytest / pytest-bdd ------------------------------------------------------
@@ -30,6 +33,10 @@ markers = [
     "cart: shopping cart scenarios",
     "discounts: discount code scenarios",
     "receipt: receipt scenarios",
+    "payments: card payment scenarios",
+    "shipping: shipping cost scenarios",
+    "journey: end-to-end journeys across several domains",
+    "checkout: checkout journey",
     "smoke: quick, most important checks",
 ]
 addopts = "--strict-markers"

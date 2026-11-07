@@ -1,0 +1,7 @@
+{
+  "rates": [
+    {"country": "United States", "rate": "5.00"},
+    {"country": "Canada",        "rate": "12.00"}
+  ],
+  "free_shipping_from": "50.00"
+}

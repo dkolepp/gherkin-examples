@@ -1,3 +1,3 @@
 from pytest_bdd import scenarios
 
-scenarios("discounts.feature")
+scenarios("domains/cart/discounts.feature")

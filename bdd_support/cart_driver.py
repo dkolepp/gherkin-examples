@@ -1,4 +1,6 @@
-"""The ShopDriver: business-level actions, with no Gherkin and no runner code.
+"""Cart driver (owned by the cart team).
+
+The ShopDriver: business-level actions, with no Gherkin and no runner code.
 
 Step definitions stay one or two lines long because the real work lives here.
 If the shop later gets a web UI or REST API, you can swap this driver for one
@@ -28,7 +30,6 @@ class ShopDriver:
         self.catalog = Catalog()
         self.discounts = DiscountBook()
         self.cart: Cart | None = None
-        self.last_error: Exception | None = None
         self.receipt: str | None = None
 
     # --- setting up the world -------------------------------------------
@@ -65,16 +66,3 @@ class ShopDriver:
     def print_receipt(self) -> str:
         self.receipt = render_receipt(self.cart)
         return self.receipt
-
-    # --- expecting failure ----------------------------------------------
-    def attempt(self, action, *args) -> None:
-        """Run an action that may fail and remember the error for a Then step.
-
-        "When I add..."      -> must succeed; an error fails the scenario.
-        "When I try to add..." -> calls attempt(); a Then step checks the error.
-        """
-        self.last_error = None
-        try:
-            action(*args)
-        except Exception as error:  # domain errors are what we want to see
-            self.last_error = error

@@ -1,0 +1,39 @@
+# Example only. GitHub reads ownership rules from .github/CODEOWNERS; this file
+# shows what that would look like for this repo. The team names are made up.
+# With it in place, a pull request touching a team's files needs that team's
+# approval.
+
+# Cart team
+/src/shop/                                @example-org/cart-team
+/features/domains/cart/                   @example-org/cart-team
+/bdd_support/cart_driver.py               @example-org/cart-team
+/features/steps/cart_steps.py             @example-org/cart-team
+/tests/bdd/step_defs/cart_steps.py        @example-org/cart-team
+
+# Payments team
+/src/payments/                            @example-org/payments-team
+/features/domains/payments/               @example-org/payments-team
+/bdd_support/payments_driver.py           @example-org/payments-team
+/features/steps/payment_steps.py          @example-org/payments-team
+/tests/bdd/step_defs/payment_steps.py     @example-org/payments-team
+
+# Shipping team
+/src/shipping/                            @example-org/shipping-team
+/features/domains/shipping/               @example-org/shipping-team
+/bdd_support/shipping_driver.py           @example-org/shipping-team
+/features/steps/shipping_steps.py         @example-org/shipping-team
+/tests/bdd/step_defs/shipping_steps.py    @example-org/shipping-team
+
+# Checkout team: owns the journey
+/src/checkout/                            @example-org/checkout-team
+/features/journeys/                       @example-org/checkout-team
+/bdd_support/checkout_driver.py           @example-org/checkout-team
+/features/steps/checkout_steps.py         @example-org/checkout-team
+/tests/bdd/step_defs/checkout_steps.py    @example-org/checkout-team
+
+# Shared by everyone. Note: with several owners on one line, GitHub needs
+# approval from any ONE of them. Agree as a team to wait for all of them.
+/features/steps/common_steps.py           @example-org/cart-team @example-org/payments-team @example-org/shipping-team @example-org/checkout-team
+/tests/bdd/step_defs/common_steps.py      @example-org/cart-team @example-org/payments-team @example-org/shipping-team @example-org/checkout-team
+/bdd_support/outcome.py                   @example-org/cart-team @example-org/payments-team @example-org/shipping-team @example-org/checkout-team
+/bdd_support/types.py                     @example-org/cart-team @example-org/payments-team @example-org/shipping-team @example-org/checkout-team

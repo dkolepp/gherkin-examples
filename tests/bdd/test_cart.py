@@ -6,4 +6,4 @@ and the steps are in conftest.py.
 
 from pytest_bdd import scenarios
 
-scenarios("cart.feature")
+scenarios("domains/cart/cart.feature")
