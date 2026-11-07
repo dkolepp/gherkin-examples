@@ -1,6 +1,6 @@
 # Owner: checkout journey owner.
-# Every step here comes from a team package pinned in requirements.txt.
-# Run `make catalog` to see them all.
+# Every step here comes from a team's published step library. Each language's
+# journey project pins the library versions it uses and writes no step code.
 @journey @checkout
 Feature: Checkout journey
   A shopper fills a cart, pays by card and gets the order shipped.

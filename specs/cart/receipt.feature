@@ -1,7 +1,8 @@
 @receipt
 Feature: Printed receipt
 
-  # Test data can live outside the spec too: this loads test_data/standard_shop.json.
+  # Test data can live outside the spec too: this loads the standard_shop.json
+  # data set that the cart team's kit bundles.
   # Use this for big or shared data sets; keep small, meaningful data inline.
   Background:
     Given the shop is set up from "standard_shop.json"

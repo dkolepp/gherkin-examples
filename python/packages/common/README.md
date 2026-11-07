@@ -1,4 +1,4 @@
-# shop-bdd-common 1.0.0
+# shop-bdd-common 1.1.0
 
 Shared building blocks for every team's BDD step library. Owned by all teams:
 any change needs every team's review.
@@ -10,7 +10,9 @@ any change needs every team's review.
 | Placeholder types `{amount:Money}`, `{qty:Qty}` | registered on import | `pytest_support.p(...)` |
 
 Also: `data.load_json()` for bundled test data, `deprecation.deprecated()` for
-retiring step sentences.
+retiring step sentences, and `behave_runner.SpecsRunner` for running feature
+files kept in another folder than their `environment.py` and `steps/`
+(set `runner = "shop_bdd_common.behave_runner:SpecsRunner"` in your behave config).
 
 Install with the extra for your runner: `shop-bdd-common[behave]` or
 `shop-bdd-common[pytest]`.

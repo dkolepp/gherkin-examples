@@ -4,26 +4,34 @@ An end-to-end journey across the cart, payments, shipping and checkout teams.
 Like an Ansible playbook, it only composes other teams' published work:
 
 ```
-journey/
+python/journey/
 ├── requirements.txt          which team packages, at which versions
 ├── Makefile                  install, test, catalog, check
-└── features/
-    ├── checkout.feature      the journey itself
+├── behave.ini                wiring folder first, then the shared spec
+└── features/                 behave wiring only (no .feature files)
     ├── environment.py        give each scenario fresh drivers (15 lines)
     └── steps/team_steps.py   import the teams' step libraries (5 lines)
+
+specs/journeys/
+└── checkout.feature          the journey itself, shared by every language
 ```
 
 There is no step code and no driver code here. Every sentence in
-`checkout.feature` comes from a team package.
+`specs/journeys/checkout.feature` comes from a team package.
+
+`behave.ini` sets `runner = shop_bdd_common.behave_runner:SpecsRunner` and
+`paths = features ../../specs/journeys`. Plain behave expects the `.feature`
+files in the same folder as `environment.py` and `steps/`; SpecsRunner (from
+shop-bdd-common 1.1.0) takes the wiring from the first path and runs the rest.
 
 ## Run it
 
-From the repo root, build the team packages first (in real life they would
-already be on your private package index):
+Build the team packages first (in real life they would already be on your
+private package index):
 
 ```bash
-make build                 # at the repo root: wheels into ../dist
-cd journey
+make -C python build       # from the repo root: wheels into python/dist
+cd python/journey
 make test                  # install the pinned wheels, run the journey
 make catalog               # every step you can use, with descriptions
 make check                 # dry run: fails on undefined or duplicate steps

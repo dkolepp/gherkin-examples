@@ -25,6 +25,13 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-bdd_features_base_dir = "features/"
+# The feature files are the shared, language-neutral specs at the repo root.
+bdd_features_base_dir = "../../../specs/cart/"
 addopts = "--strict-markers"
 markers = ["cart: tag from the feature files", "discounts: tag from the feature files", "receipt: tag from the feature files", "smoke: tag from the feature files"]
+
+[tool.behave]
+# Wiring (environment.py, steps/) first, then the shared specs to run.
+# SpecsRunner lets them live in different folders; see its docstring.
+runner = "shop_bdd_common.behave_runner:SpecsRunner"
+paths = ["features", "../../../specs/cart"]

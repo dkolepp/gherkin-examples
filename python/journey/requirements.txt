@@ -1,7 +1,7 @@
 # The team step libraries this journey uses, pinned to exact versions.
 # Like an Ansible requirements.yml: change a pin to upgrade a team's library.
 # `make install` takes these from built wheels only (see Makefile).
-shop-bdd-common[behave]==1.0.0
+shop-bdd-common[behave]==1.1.0
 shop-cart[behave]==1.0.0
 shop-payments[behave]==1.0.0
 shop-shipping[behave]==1.1.0

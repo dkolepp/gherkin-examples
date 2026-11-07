@@ -1,4 +1,4 @@
-# gherkin-examples
+# gherkin-examples: Python
 
 Learn **Gherkin** and **BDD** (Behaviour-Driven Development) in Python, using
 [behave](https://behave.readthedocs.io/) and
@@ -11,10 +11,19 @@ The example is a tiny shop, split the way a real organisation might split it:
 - **A light journey project** installs those packages as built wheels and runs
   an end-to-end checkout scenario. It writes no step code of its own.
 
+The feature files are not in this folder. They are the shared,
+language-neutral specs in [`../specs/`](../specs), which every language's kits
+implement (see the [root README](../README.md)). This folder holds only the
+Python side: the packages, their step code and the runner wiring.
+
+All paths and commands below are relative to this `python/` folder. From the
+repo root, use `make python-test`, `make python-journey`, or
+`make -C python <target>`.
+
 Three lessons run through it:
 
 1. **Specs are separate from test code.** The same Gherkin runs under behave
-   and pytest-bdd.
+   and pytest-bdd (and, with go/, under godog).
 2. **Teams own their parts.** Each team's rules, driver and steps live in its
    own package.
 3. **Boundaries need contracts.** Step sentences, driver state and versions are
@@ -37,14 +46,17 @@ them to some packages.
 ## The big picture
 
 ```
+../specs/                     the shared Gherkin specs, one folder per team
+├── cart/ payments/ shipping/ checkout/
+└── journeys/                 the end-to-end journey
 packages/                     one folder per team; each would be its own repo
-├── common/     shop-bdd-common 1.0.0   shared steps and helpers (all teams)
+├── common/     shop-bdd-common 1.1.0   shared steps and helpers (all teams)
 ├── cart/       shop-cart       1.0.0   cart, discounts, receipt
 ├── payments/   shop-payments   1.0.0   card payments
 ├── shipping/   shop-shipping   1.1.0   shipping costs and shipments
 └── checkout/   shop-checkout   1.0.0   placing an order (uses the other three)
 dist/                         built wheels: our stand-in for a package index
-journey/                      the end-to-end journey (light: no step code)
+journey/                      runs the journey (light: no step code)
 Makefile                      team tasks: dev, test, build, journey
 ```
 
@@ -52,12 +64,12 @@ It maps closely onto the Ansible ecosystem:
 
 | Ansible | Here |
 |---|---|
-| Playbook, written by an integrator | `journey/features/checkout.feature`, by the journey owner |
+| Playbook, written by an integrator | `../specs/journeys/checkout.feature`, by the journey owner |
 | Role or collection, by domain experts | A team package: driver + step library + bundled data |
 | Module (does the actual work) | Driver method (`charge`, `ship`) |
 | Role's `argument_specs` | Step sentences and their typed placeholders (`{amount:Money}`) |
 | Role defaults | Bundled test data (`standard_shop.json`) |
-| Molecule tests for a role | Each team's own feature files in `packages/<team>/features/` |
+| Molecule tests for a role | Each team's own feature files in `../specs/<team>/` |
 | Galaxy | `dist/` (in real life, a private package index) |
 | `requirements.yml` | `journey/requirements.txt` with pinned versions |
 | `ansible-doc` | `make -C journey catalog` |
@@ -76,12 +88,35 @@ packages/payments/
 │       ├── driver.py         HOW   business actions in Python
 │       ├── steps_behave.py   GLUE  step definitions for behave
 │       └── steps_pytest.py   GLUE  the same steps for pytest-bdd
-├── features/                 WHAT  the team's own rules, in Gherkin
-│   ├── payments.feature
-│   ├── environment.py        behave wiring
+├── features/                 behave wiring for ../specs/payments/ (no .feature files)
+│   ├── environment.py        gives each scenario fresh drivers
 │   └── steps/use_steps.py    imports the step library, just like consumers do
 └── tests/bdd/                pytest-bdd wiring for the same feature files
+
+../specs/payments/            WHAT  the team's own rules, in Gherkin
+└── payments.feature
 ```
+
+### How the runners find the shared specs
+
+Both runners are configured in the package's `pyproject.toml`:
+
+```toml
+[tool.pytest.ini_options]
+bdd_features_base_dir = "../../../specs/payments/"   # scenarios("payments.feature") looks here
+
+[tool.behave]
+runner = "shop_bdd_common.behave_runner:SpecsRunner"
+paths = ["features", "../../../specs/payments"]      # wiring first, then the specs
+```
+
+pytest-bdd only needs the base folder. behave needs help: it takes the first
+path as its base directory and insists that it holds both `steps/` (or
+`environment.py`) and at least one `.feature` file. Plain behave therefore
+fails both ways round: with the specs first it finds no `steps/`, with the
+wiring first it finds no feature files. `SpecsRunner`, a small `Runner`
+subclass in shop-bdd-common, uses the first path only to find the wiring
+and runs the remaining paths.
 
 The layers, from most readable to most technical:
 
@@ -93,7 +128,7 @@ src/shop_*/      APP    The real application. Knows nothing about tests.
 ```
 
 Each team tests its step library by importing it, exactly as other teams will.
-If a team's own `features/` pass, the published steps work.
+If a team's own specs pass, the published steps work.
 
 ## Contracts between teams
 
@@ -193,7 +228,7 @@ pytest                       # the same feature files with pytest-bdd, plus unit
 |------|--------|-----------|
 | Only `@smoke` scenarios | `behave --tags=smoke` | `pytest -m smoke` |
 | Skip a tag | `behave --tags="not receipt"` | `pytest -m "not receipt"` |
-| One feature file | `behave features/cart.feature` | `pytest tests/bdd/test_cart.py` |
+| One feature file | `behave ../../../specs/cart/cart.feature` | `pytest tests/bdd/test_cart.py` |
 | By scenario name | `behave -n "stock"` | `pytest -k stock` |
 | Compact output | `behave -f progress` | `pytest -q` |
 
@@ -253,12 +288,14 @@ the step.)
 
 ## Exercises
 
-1. In `packages/cart/features/cart.feature`, add a scenario: removing a "Mug"
+1. In `../specs/cart/cart.feature`, add a scenario: removing a "Mug"
    from an empty cart leaves the cart empty. It needs only existing steps.
 2. Add a step to the cart kit, e.g. `Then the cart should have {n:Qty} different
    products`, in both `steps_behave.py` and `steps_pytest.py`. Bump the cart
    version to 1.1.0, add a CHANGELOG entry, `make build`, update the pin in
-   `journey/requirements.txt`, and use the new step in the journey.
+   `journey/requirements.txt`, and use the new step in the journey
+   (`../specs/journeys/checkout.feature`). A new sentence in a shared spec
+   needs a step in every language's kit before their runs pass.
 3. Retire a sentence: rename a payments step and deprecate the old wording the
    way `packages/shipping` does. Check the warning appears when the old
    sentence runs.
@@ -271,9 +308,9 @@ the step.)
 
 | Document | What it covers |
 |---|---|
-| [Gherkin support matrix](docs/gherkin-support-matrix.html) | Which Gherkin syntax behave, godog and pytest-bdd support, tested against each tool, plus Gherkin's version history. Download and open in a browser; [live version](https://claude.ai/artifact/MT6CLm637feEN39eXGMrjU) |
-| [Journey Testing Platform](docs/journey-testing-platform.md) | Journey testing as a platform problem: personas, responsibilities, contracts at each boundary, friction and how to measure it |
-| [Jira Xray: Test Management Model](docs/jira-xray-test-management.md) | What Xray is for, its entity model, Gherkin support, limits, and how it compares with the platform model |
+| [Gherkin support matrix](../docs/gherkin-support-matrix.html) | Which Gherkin syntax behave, godog and pytest-bdd support, tested against each tool, plus Gherkin's version history. Download and open in a browser; [live version](https://claude.ai/artifact/MT6CLm637feEN39eXGMrjU) |
+| [Journey Testing Platform](../docs/journey-testing-platform.md) | Journey testing as a platform problem: personas, responsibilities, contracts at each boundary, friction and how to measure it |
+| [Jira Xray: Test Management Model](../docs/jira-xray-test-management.md) | What Xray is for, its entity model, Gherkin support, limits, and how it compares with the platform model |
 
 The Markdown files are exported copies; each links to its live version.
 

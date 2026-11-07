@@ -1,5 +1,8 @@
 """Give every scenario fresh drivers from each team's step library.
 
+The journey itself is specs/journeys/checkout.feature at the repo root;
+behave.ini lists this folder first so behave finds this file and steps/.
+
 Order matters: checkout is built from the cart, payments and shipping drivers.
 """
 

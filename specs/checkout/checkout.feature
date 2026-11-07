@@ -1,5 +1,5 @@
-# Owner: checkout team. Checkout's own rules. The end-to-end journey lives in
-# the separate journey/ project, which installs this package as a dependency.
+# Owner: checkout team. Checkout's own rules. The end-to-end journey is
+# specs/journeys/checkout.feature, run by a separate journey project.
 @checkout
 Feature: Placing an order
 

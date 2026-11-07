@@ -8,6 +8,10 @@ This package is two things:
 - `shop_payments.bdd`: the team's BDD kit, a driver and step library other teams
   can use in their own feature files.
 
+The team's own feature files are the shared, language-neutral specs in
+`specs/payments/` at the repo root. `features/` here holds only the behave wiring,
+and `tests/bdd/` the pytest-bdd wiring; `pyproject.toml` points both at the specs.
+
 ## Contract
 
 | | behave | pytest-bdd |

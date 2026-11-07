@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shop-bdd-common"
-version = "1.0.0"
+version = "1.1.0"
 description = "Shared BDD building blocks for the shop teams' step libraries"
 readme = "README.md"
 requires-python = ">=3.10"

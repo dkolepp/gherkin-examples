@@ -5,8 +5,9 @@
     outcome.py        remembers the error from a "try to" step
     data.py           loads JSON test data (bundled defaults or your own file)
     deprecation.py    marks a step sentence as deprecated
+    behave_runner.py  runs specs that live apart from their behave wiring
     steps_behave.py   the shared 'I should be told "..."' step (behave)
     steps_pytest.py   the same step (pytest-bdd)
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"

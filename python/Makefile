@@ -1,9 +1,12 @@
-# Team-side tasks: develop, test and build every team package.
+# Python: develop, test and build every team package (run from python/,
+# or from the repo root with `make -C python <target>`).
+# The feature files are the shared specs in ../specs/; each package's
+# pyproject.toml points behave and pytest-bdd at its team's folder there.
 # The journey has its own Makefile in journey/.
 #
 #   make dev        install all packages in editable mode (for team development)
 #   make test       run each team's own feature files and tests
-#   make build      build each package into a wheel in dist/ (our "Galaxy")
+#   make build      build each package into a wheel in python/dist/ (our "Galaxy")
 #   make journey    build, then run the journey against the built wheels
 #
 # Limit to some packages with:  make test PACKAGES="cart payments"

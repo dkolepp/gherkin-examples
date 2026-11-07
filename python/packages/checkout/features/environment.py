@@ -1,4 +1,4 @@
-"""behave hooks for the checkout team's own feature files.
+"""behave hooks for the checkout team's own feature files (in specs/checkout/ at the repo root).
 
 Each step library has an install(context) that puts its driver on the context.
 Order matters: a library may need what an earlier one installed.
