@@ -267,6 +267,16 @@ the step.)
 5. Break the contract on purpose: define `I have an empty cart` again in
    `journey/features/steps/team_steps.py` and run `make -C journey check`.
 
+## Further reading
+
+| Document | What it covers |
+|---|---|
+| [Gherkin support matrix](docs/gherkin-support-matrix.html) | Which Gherkin syntax behave, godog and pytest-bdd support, tested against each tool, plus Gherkin's version history. Download and open in a browser; [live version](https://claude.ai/artifact/MT6CLm637feEN39eXGMrjU) |
+| [Journey Testing Platform](docs/journey-testing-platform.md) | Journey testing as a platform problem: personas, responsibilities, contracts at each boundary, friction and how to measure it |
+| [Jira Xray: Test Management Model](docs/jira-xray-test-management.md) | What Xray is for, its entity model, Gherkin support, limits, and how it compares with the platform model |
+
+The Markdown files are exported copies; each links to its live version.
+
 ## Task runner
 
 Plain `make` is used because it's already installed almost everywhere. If you

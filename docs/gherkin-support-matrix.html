@@ -1,0 +1,279 @@
+<title>Gherkin Support Matrix</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; the matrix breaks wider and scrolls on its own on phones. */
+:root {
+  --bg: #f6f8f3;
+  --surface: #ffffff;
+  --fg: #1c241b;
+  --muted: #5b6858;
+  --line: #dbe3d5;
+  --accent: #3f7a2c;          /* dill / pickle green */
+  --accent-soft: #e5f0dc;
+  --yes: #2f7a3a;   --yes-bg: #e3f3e3;
+  --part: #8a5a00;  --part-bg: #fbefd2;
+  --no: #b3261e;    --no-bg: #fbe3e0;
+  --na: #6b7280;    --na-bg: #eceee9;
+  --code-bg: #eef2ea;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121611; --surface: #1a2019; --fg: #e4ebe0; --muted: #9aa894; --line: #2e382c;
+    --accent: #8fcf6e; --accent-soft: #223020;
+    --yes: #7fd18a; --yes-bg: #1d3320; --part: #f0c060; --part-bg: #3a2e12;
+    --no: #ff8a80; --no-bg: #3d1d1a; --na: #a0a7a0; --na-bg: #262b25; --code-bg: #232b21;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121611; --surface: #1a2019; --fg: #e4ebe0; --muted: #9aa894; --line: #2e382c;
+  --accent: #8fcf6e; --accent-soft: #223020;
+  --yes: #7fd18a; --yes-bg: #1d3320; --part: #f0c060; --part-bg: #3a2e12;
+  --no: #ff8a80; --no-bg: #3d1d1a; --na: #a0a7a0; --na-bg: #262b25; --code-bg: #232b21;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px; }
+.wrap > * { min-width: 0; }
+.prose { max-width: 68ch; }
+h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; line-height: 1.05; }
+h2 { font-size: 1.45rem; font-weight: 600; margin-bottom: 12px; }
+p { margin: 0 0 12px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; white-space: nowrap; }
+.eyebrow { font: 600 0.78rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 12px; }
+.lead { font-size: 1.15rem; color: var(--muted); margin-top: 14px; }
+.meta { font: 0.82rem/1.6 var(--mono); color: var(--muted); margin-top: 14px; }
+
+/* tool summary */
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.tool { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 6px; align-content: start; }
+.tool h3 { margin: 0; font: 600 1.15rem/1.2 var(--display); }
+.tool .sub { color: var(--muted); font-size: 0.9rem; }
+.score { font: 800 2.2rem/1 var(--display); font-variant-numeric: tabular-nums; margin-top: 6px; }
+.score small { font-size: 1rem; color: var(--muted); font-weight: 600; }
+.tally { font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.parser { font: 0.8rem/1.4 var(--mono); padding: 4px 8px; border-radius: 6px; justify-self: start; background: var(--accent-soft); color: var(--fg); }
+.parser.own { background: var(--part-bg); }
+
+/* takeaway */
+.takeaway { background: var(--accent-soft); border-radius: 12px; padding: 22px; }
+.takeaway ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+
+/* matrix */
+.bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.bar h2 { margin: 0; }
+.toggle { font: 600 0.9rem var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+.toggle[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 760px; }
+thead th { position: sticky; top: 0; background: var(--surface); font: 600 0.78rem/1.2 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); text-align: left; padding: 12px; border-bottom: 1px solid var(--line); }
+thead th .v { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; margin-top: 3px; }
+tbody th, tbody td { text-align: left; vertical-align: top; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+tbody th { font-weight: 600; width: 32%; }
+tbody tr:last-child > * { border-bottom: 0; }
+tr.group th { background: var(--bg); font: 600 0.78rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); padding: 10px 12px; }
+td.since { font: 0.8rem/1.4 var(--mono); color: var(--muted); white-space: nowrap; width: 9%; }
+td { width: 19.6%; }
+.chip { display: inline-flex; gap: 5px; align-items: center; font-weight: 700; font-size: 0.85rem; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.chip.yes { color: var(--yes); background: var(--yes-bg); }
+.chip.partial { color: var(--part); background: var(--part-bg); }
+.chip.no { color: var(--no); background: var(--no-bg); }
+.chip.na { color: var(--na); background: var(--na-bg); }
+.note { display: block; font-size: 0.84rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+.note code { white-space: normal; }
+.diffonly tr.allyes { display: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
+
+/* timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 2px solid var(--line); }
+.timeline li { display: grid; grid-template-columns: 8.5rem 1fr; gap: 14px; padding: 10px 0 10px 18px; position: relative; }
+.timeline li::before { content: ""; position: absolute; left: -6px; top: 17px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.timeline .ver { font: 600 0.85rem/1.5 var(--mono); color: var(--accent); }
+@media (max-width: 520px) { .timeline li { grid-template-columns: 1fr; gap: 2px; } }
+
+.small { font-size: 0.92rem; color: var(--muted); }
+.small li { margin-bottom: 4px; }
+</style>
+
+<div class="wrap">
+  <header class="prose">
+    <div class="eyebrow">Gherkin · BDD tooling</div>
+    <h1>Gherkin Support Matrix</h1>
+    <p class="lead">Which Gherkin syntax works in behave, godog and pytest-bdd. Each result comes from running a small feature file through the real tool, not from reading its docs.</p>
+    <div class="meta">Tested 7 Nov 2026 · behave 1.3.3 · godog v0.16.0 · pytest-bdd 9.0.1 · Python 3.13 · Go 1.24</div>
+  </header>
+
+  <section aria-label="Tools">
+    <div class="tools">
+      <div class="tool">
+        <h3>behave</h3>
+        <div class="sub">Python · runner with its own CLI</div>
+        <span class="parser own">own hand-written parser</span>
+        <div class="score">21<small>/28</small></div>
+        <div class="tally">4 partial · 3 unsupported</div>
+      </div>
+      <div class="tool">
+        <h3>godog</h3>
+        <div class="sub">Go · official Cucumber project</div>
+        <span class="parser">official parser · gherkin v42.0.0</span>
+        <div class="score">28<small>/28</small></div>
+        <div class="tally">0 partial · 0 unsupported</div>
+      </div>
+      <div class="tool">
+        <h3>pytest-bdd</h3>
+        <div class="sub">Python · pytest plugin</div>
+        <span class="parser">official parser · gherkin-official 42.0.1</span>
+        <div class="score">26<small>/28</small></div>
+        <div class="tally">2 partial · 0 unsupported</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="takeaway prose">
+    <h2>What this means for shared feature files</h2>
+    <p>godog and pytest-bdd use Cucumber's official parser at its newest version, so they read any valid Gherkin. behave writes its own parser, which covers Gherkin 6 and Rule tags but misses some smaller syntax. If one set of <code>.feature</code> files must run in all three, avoid:</p>
+    <ul>
+      <li>Doc strings fenced with <code>```</code>. Use <code>"""</code>.</li>
+      <li>Media types on doc strings (<code>"""json</code>). Only godog lets step code read them.</li>
+      <li>A plain <code>Scenario:</code> with Examples. Write <code>Scenario Outline:</code>.</li>
+      <li>Description text under <code>Examples:</code>. Name the Examples block instead.</li>
+      <li><code>\n</code> or <code>\\</code> in table cells, and <code>\"\"\"</code> inside doc strings.</li>
+      <li>A step with both a doc string and a table (Gherkin 42 only).</li>
+    </ul>
+    <p style="margin-top:12px">The shop example in this repo already stays inside that subset. Tag filtering differs on each command line, see <a href="#runner">Running by tag</a>.</p>
+  </section>
+
+  <section aria-labelledby="matrix-h">
+    <div class="bar">
+      <h2 id="matrix-h">Syntax support</h2>
+      <button class="toggle" id="diff-toggle" type="button" aria-pressed="false">Show only differences</button>
+    </div>
+    <div class="scroll">
+      <table id="matrix">
+        <thead><tr>
+          <th scope="col">Gherkin feature</th>
+          <th scope="col">Since<span class="v">gherkin ver.</span></th>
+          <th scope="col">behave<span class="v">1.3.3</span></th>
+          <th scope="col">godog<span class="v">v0.16.0</span></th>
+          <th scope="col">pytest-bdd<span class="v">9.0.1</span></th>
+        </tr></thead>
+        <tbody>
+<tr class="group"><th colspan="5" scope="colgroup">Structure</th></tr>
+<tr class="allyes"><th scope="row">Feature, Scenario, Given / When / Then / And / But / <code>*</code></th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row"><code>#</code> comment lines</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Feature synonyms <code>Ability</code>, <code>Business Need</code></th><td class="since">early</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Free-text descriptions (Feature, Scenario, Background, Outline, Examples)</th><td class="since">original</td><td><span class="chip partial"><span aria-hidden="true">◐</span> Partial</span><span class="note">Fails to parse a description under <code>Examples:</code>. The others work.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Comment line inside a description</th><td class="since">31 · 2025</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Background</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Feature file with no scenarios</th><td class="since">4 · 2016</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip partial"><span aria-hidden="true">◐</span> Partial</span><span class="note">Parses, but <code>scenarios()</code> raises <code>NoScenariosFound</code>.</span></td></tr>
+<tr class="allyes"><th scope="row">Other spoken languages (<code># language: fr</code>)</th><td class="since">early</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note">80 languages.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note">80 languages.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note">80 languages.</span></td></tr>
+<tr class="group"><th colspan="5" scope="colgroup">Scenario Outlines</th></tr>
+<tr class="allyes"><th scope="row">Scenario Outline with several Examples blocks</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row"><code>&lt;placeholder&gt;</code> filled in the scenario title</th><td class="since">early</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row"><code>&lt;placeholder&gt;</code> inside doc strings and tables</th><td class="since">early</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Synonyms <code>Example</code>, <code>Scenario Template</code>, <code>Scenarios</code></th><td class="since">6 · 2018</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Plain <code>Scenario:</code> with an Examples table</th><td class="since">6 · 2018</td><td><span class="chip no"><span aria-hidden="true">✕</span> No</span><span class="note">ParserError: Examples must only appear inside a Scenario Outline.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="group"><th colspan="5" scope="colgroup">Rules</th></tr>
+<tr class="allyes"><th scope="row"><code>Rule:</code> keyword</th><td class="since">6 · 2018</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Background inside a Rule (runs after the Feature background)</th><td class="since">6 · 2018</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Description under a Rule</th><td class="since">6 · 2018</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Tags on a Rule, inherited by its scenarios</th><td class="since">18 · 2021</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="group"><th colspan="5" scope="colgroup">Data tables</th></tr>
+<tr class="allyes"><th scope="row">Data table under a step</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Empty cells</th><td class="since">early</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Cell escapes <code>\|</code> <code>\n</code> <code>\\</code></th><td class="since">3 · 2015</td><td><span class="chip partial"><span aria-hidden="true">◐</span> Partial</span><span class="note"><code>\|</code> works. <code>\n</code> and <code>\\</code> are kept as literal backslashes.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="group"><th colspan="5" scope="colgroup">Doc strings</th></tr>
+<tr class="allyes"><th scope="row">Doc string with <code>"""</code>, indentation kept</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Doc string with <code>```</code> delimiters</th><td class="since">≤ 10 · 2020</td><td><span class="chip no"><span aria-hidden="true">✕</span> No</span><span class="note">Not recognised. behave uses <code>'''</code> as its alternative instead (not standard Gherkin).</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Escaped <code>\"\"\"</code> inside a doc string</th><td class="since">early</td><td><span class="chip no"><span aria-hidden="true">✕</span> No</span><span class="note">Backslashes are kept: the step gets <code>a \"\"\" b</code>.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="diff"><th scope="row">Media type (<code>"""json</code>) readable in step code</th><td class="since">≤ 3 · 2016</td><td><span class="chip partial"><span aria-hidden="true">◐</span> Partial</span><span class="note">Parses and the text is right, but <code>context.text.content_type</code> is always <code>text/plain</code>.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note"><code>DocString.MediaType</code></span></td><td><span class="chip partial"><span aria-hidden="true">◐</span> Partial</span><span class="note">Parses, but the step gets a plain string, so the media type is dropped.</span></td></tr>
+<tr class="diff"><th scope="row">One step with both a doc string and a data table</th><td class="since">42 · 2026</td><td><span class="chip partial"><span aria-hidden="true">◐</span> Partial</span><span class="note">Both arrive, but the doc string keeps extra leading spaces.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="group"><th colspan="5" scope="colgroup">Tags</th></tr>
+<tr class="allyes"><th scope="row">Tag on Feature, inherited by scenarios</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Tag on Scenario</th><td class="since">original</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+<tr class="allyes"><th scope="row">Tag on an Examples block (filters its rows)</th><td class="since">early</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><span class="chip yes">✓ Yes</span> parsed and behaved as the spec says</span>
+      <span><span class="chip partial">◐ Partial</span> parses, but something is lost or wrong</span>
+      <span><span class="chip no">✕ No</span> parse error or wrong result</span>
+    </div>
+    <p class="small" style="margin-top:10px">“Since” is the Cucumber Gherkin parser’s major version and year. “original” means it predates the changelog; “early” means it was present before v6 but the changelog doesn’t date it.</p>
+  </section>
+
+  <section id="runner" aria-labelledby="runner-h">
+    <h2 id="runner-h">Running by tag</h2>
+    <p class="prose">Tag filters belong to each tool’s command line, not to Gherkin, so the syntax differs even where the feature files are identical.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th scope="col">Filter</th><th scope="col">Where</th>
+          <th scope="col">behave</th><th scope="col">godog</th><th scope="col">pytest-bdd</th>
+        </tr></thead>
+        <tbody>
+<tr class="diff"><th scope="row">Tag expression <code>@a and not @b</code></th><td class="since">CLI</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note"><code>--tags="@a and not @b"</code></span></td><td><span class="chip no"><span aria-hidden="true">✕</span> No</span><span class="note">Selects nothing. Use the old syntax: <code>--godog.tags="@a &amp;&amp; ~@b"</code></span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note">Tags become markers: <code>-m "a and not b"</code> (no @).</span></td></tr>
+<tr class="diff"><th scope="row">Old tag syntax <code>@a,@b</code> (OR)</th><td class="since">CLI</td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note">Still accepted.</span></td><td><span class="chip yes"><span aria-hidden="true">✓</span> Yes</span><span class="note"><code>,</code> = OR, <code>&amp;&amp;</code> = AND, <code>~</code> = NOT.</span></td><td><span class="chip na"><span aria-hidden="true">–</span> n/a</span><span class="note">No equivalent. Use <code>-m "a or b"</code>.</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="prose" aria-labelledby="tl-h">
+    <h2 id="tl-h">How Gherkin has changed</h2>
+    <p>Gherkin is versioned through Cucumber’s parser package, which bumps its major version often (it is at 42). Most bumps are internal. These are the ones that changed what you can write in a feature file:</p>
+    <ol class="timeline"><li><span class="ver">3 · 2015–16</span><span>Table cell escapes (<code>\|</code> <code>\n</code> <code>\\</code>); doc string media type.</span></li><li><span class="ver">4 · 2016</span><span>Empty feature files and incomplete outlines allowed.</span></li><li><span class="ver">5 · 2017–18</span><span>Parser option for a default language; media type carried through to test runners.</span></li><li><span class="ver">6 · 2018</span><span><b>Big one.</b> <code>Rule:</code> (with its own Background), <code>Example</code> as a synonym for Scenario, and a plain <code>Scenario</code> can carry Examples.</span></li><li><span class="ver">≤ 10 · 2020</span><span><code>```</code> accepted as an alternative doc string delimiter (exact version unconfirmed).</span></li><li><span class="ver">18 · 2021</span><span>Tags on <code>Rule</code>, inherited by its scenarios.</span></li><li><span class="ver">19 · 2021</span><span>Experimental Markdown feature files (<code>.feature.md</code>). Not tested here.</span></li><li><span class="ver">31 · 2025</span><span>Comments allowed inside descriptions.</span></li><li><span class="ver">42 · 2026</span><span>A step may have both a doc string and a data table. Newest major (42.0.1, Aug 2026).</span></li></ol>
+    <p class="small" style="margin-top:12px">behave doesn’t follow these version numbers. Its 1.2.7 release added “Gherkin v6” support (Rule, the new synonyms); 1.3.x carries that forward.</p>
+  </section>
+
+  <section class="prose small" aria-labelledby="m-h">
+    <h2 id="m-h" style="color:var(--fg)">Method and sources</h2>
+    <ul>
+      <li>28 syntax probes plus 2 tag-filter probes, one small <code>.feature</code> file each. Every tool ran each file with a catch-all step that logged the step text, table and doc string it received. A script then compared the log with the expected result.</li>
+      <li>Version history: <a href="https://github.com/cucumber/gherkin/blob/main/CHANGELOG.md">cucumber/gherkin CHANGELOG</a>. Rule Background and Examples tags/descriptions aren’t dated there, so the probes confirmed they parse in v42.</li>
+      <li><a href="https://behave.readthedocs.io/en/latest/new_and_noteworthy_v1.2.7/">behave 1.2.7 release notes</a> (Gherkin v6 support).</li>
+      <li><a href="https://github.com/cucumber/godog">cucumber/godog</a>; its <code>go.mod</code> pins <code>gherkin/go/v42</code>.</li>
+      <li>Not tested: Markdown feature files (<code>.feature.md</code>), and per-language keyword quirks beyond French.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById("diff-toggle");
+    var table = document.getElementById("matrix");
+    function set(on) {
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      table.classList.toggle("diffonly", on);
+      // hide group headers whose rows are all hidden
+      var groups = table.querySelectorAll("tr.group");
+      groups.forEach(function (g) {
+        var r = g.nextElementSibling, any = false;
+        while (r && !r.classList.contains("group")) { if (!on || r.classList.contains("diff")) any = true; r = r.nextElementSibling; }
+        g.hidden = !any;
+      });
+      try { localStorage.setItem("diffonly", on ? "1" : "0"); } catch (e) {}
+    }
+    btn.addEventListener("click", function () { set(btn.getAttribute("aria-pressed") !== "true"); });
+    var saved = null;
+    try { saved = localStorage.getItem("diffonly"); } catch (e) {}
+    if (saved === "1") set(true);
+  })();
+</script>
